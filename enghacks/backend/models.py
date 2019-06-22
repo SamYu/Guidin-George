@@ -1,5 +1,4 @@
 from django.db import models
-from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AbstractUser
 from django.contrib.postgres.fields import ArrayField
 from django.conf import settings
@@ -12,12 +11,27 @@ class User(AbstractUser):
     city = models.CharField(max_length=30)
 
 class UserHealthInformation(models.Model):
+    sex_choices = [
+        ('male', 'Male'),
+        ('female', 'Female'),
+        ('other', 'Other'),
+    ]
+
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name='health_information',
     )
-    date_of_birth = models.DateField()
+    sex = models.CharField(
+        max_length=6,
+        choices=sex_choices,
+        null=True,
+    )
+    date_of_birth = models.DateField(
+        auto_now = False,
+        null=True,
+        blank=True
+    )
     allergies = ArrayField(
         models.CharField(max_length=30, blank=True),
         null=True,

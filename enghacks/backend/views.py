@@ -2,7 +2,7 @@ from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import viewsets
 from django.contrib.auth import get_user_model
-from backend.serializers import UserSerializer
+from backend.serializers import UserLoginSerializer
 
 from twilio.twiml.messaging_response import MessagingResponse
 
@@ -23,4 +23,4 @@ def sms_response(request):
 class UserLoginViewSet(viewsets.ModelViewSet):
     User = get_user_model()
     queryset = User.objects.all()
-    serializer_class = UserSerializer
+    serializer_class = UserLoginSerializer
