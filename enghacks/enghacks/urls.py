@@ -21,6 +21,7 @@ from django.contrib import admin
 
 router = routers.DefaultRouter()
 router.register(r'login', views.UserLoginViewSet)
+router.register(r'sms', views.SMSDirectionsViewSet,base_name='sms')
 
 urlpatterns = [
     url('api/', include(router.urls)),

@@ -25,7 +25,7 @@ SECRET_KEY = 'oml=wor8-f=#wyucbcltt)0uso4o40$+5aybvy#%p+imjd)7q4'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['ede4e829.ngrok.io', '127.0.0.1']
 
 
 # Application definition
@@ -126,3 +126,10 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 AUTH_USER_MODEL = 'backend.User'
+
+#Twilio Auth
+TWILIO_ACCOUNT_SID = 'ACf416ed04ce36850cf1763bf9e58a5703'
+TWILIO_AUTH_TOKEN = '111451f11aaa40c0bb026f609f1df2ef'
+TWILIO_DEFAULT_CALLERID = '+16473608605'
+DJANGO_TWILIO_FORGERY_PROTECTION = False
+DJANGO_TWILIO_BLACKLIST_CHECK = True
