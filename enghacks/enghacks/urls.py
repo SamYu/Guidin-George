@@ -19,6 +19,6 @@ from django.contrib import admin
 
 
 urlpatterns = [
-    url(r'^sms/', include('sms.urls')),
+    url(r'^api/', include('backend.urls')),
     url(r'^admin/', admin.site.urls),
 ]
