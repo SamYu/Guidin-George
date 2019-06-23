@@ -79,14 +79,40 @@ class SMSDirectionsViewSet(viewsets.ModelViewSet):
         if not latest_thread or latest_thread.current_step == 'ARRIVED':
             latest_thread = self._create_new_thread(request_user)
             return_body = self._current_step_dialog(latest_thread)
-        
-        else:
-            store_data(latest_thread)
 
-            latest_thread.increment_step()
+        elif latest_thread.current_step == 'DEST_CHOICES':
+            places_list = latest_thread.places_list
+            if self.is_integer(request_body):
+                choice_number = int(request_body) - 1
+                if choice_number < len(places_list):
+                    selected_dest = places_list[choice_number]
+                    latest_thread.end_location = selected_dest.address
+                    # JOSIAH'S FUNCTION
+                    return_body = self.list_of_directions(
+                        latest_thread.start_location,
+                        latest_thread.end_location,
+                    )
+                    self.send_text(return_body, reply_number)
+                    latest_thread.increment_step()
+                    return Response(request.data)
+            else:
+                return_body = 'Invalid choice, please enter a number between 1 and {}'.format(
+                    len(places_list)
+                )
+                self.send_text(return_body, reply_number)
+                return Response(request.data)
 
         self.send_text(return_body, reply_number)
         return Response(request.data)
+
+
+    def is_integer(self, text):
+        try: 
+            int(text)
+            return True
+        except ValueError:
+            return False
+
 
     def _create_new_thread(self, request_user):
         new_thread = DirectionThread.objects.create(
