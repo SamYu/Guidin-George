@@ -54,7 +54,8 @@ def lst_of_directions(origin, destination):
         combined_lst.append(distanceStep)
 
     full_string = " --- ".join(combined_lst)
-    return(full_string)
+    intro = "Here are the directions: "
+    return(intro + full_string)
 
 
 class SMSDirectionsViewSet(viewsets.ModelViewSet):
@@ -99,12 +100,12 @@ class SMSDirectionsViewSet(viewsets.ModelViewSet):
                 latest_thread = self._create_new_thread(request_user)
                 self.send_text(return_body, reply_number)
                 return Response(request.data)
-            
+
         # no thread
         if not latest_thread or latest_thread.current_step == 'ARRIVED':
             latest_thread = self._create_new_thread(request_user)
             return_body = self._current_step_dialog(latest_thread)
-        
+
         else:
             store_data(latest_thread)
 
@@ -146,4 +147,3 @@ class SMSDirectionsViewSet(viewsets.ModelViewSet):
         # remove leading 1 (area codes never start with 1)
         phone = phone.lstrip('1')
         return '{}{}{}'.format(phone[0:3], phone[3:6], phone[6:])
-      
