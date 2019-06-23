@@ -6,7 +6,7 @@ from django.contrib.auth import get_user_model
 from backend.serializers import UserLoginSerializer
 from rest_framework.response import Response
 from django.conf import settings
-
+from backend.models import DirectionThread
 from twilio.twiml.messaging_response import MessagingResponse
 from twilio.rest import Client
 
@@ -43,18 +43,31 @@ class SMSDirectionsViewSet(viewsets.ModelViewSet):
     def list(self, request):
         from_num = request.query_params.get('From', None)
         reply_number = from_num if from_num else '+14169095217'
-
         request_body = request.query_params.get('Body')
 
+
         if (request_body == 'Hi' or request_body == 'Hello'):
-            return_body = 'Hello, this is _____.\n Text back 1, 2, 3'
+            request_user = User.objects.get(phone = reply_number)
+            user_threads = DirectionThread.objects.filter(
+                user = request_user
+            ).order_by('-date_time')
+            latest_thread = user_threds[0] if len(user_thread) else None
+            if not latest_thread or latest_thread.current_step == 'ARRIVED':
+                new_thread = DirectionThread.objects.create(
+                    user = request_user
+                )
+            else:
+                new_thread = latest_thread
+
+
+
 
         else:
             return_body = 'That was not Hello'
 
         return Response(request.data)
-
-    def sendText(self, return_body):
+    #
+    def send_text(self, return_body):
         reply_number = 'test'
         message = self.client.messages \
                 .create(
