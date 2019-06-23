@@ -9,6 +9,8 @@ from django.conf import settings
 from backend.models import DirectionThread
 from twilio.twiml.messaging_response import MessagingResponse
 from twilio.rest import Client
+from datetime import datetime, timedelta
+import re
 
 @csrf_exempt
 def sms_response(request):
@@ -45,11 +47,13 @@ current_step_options = [
     ('DEST_CHOICES', 'DEST_CHOICES'),
     ('ARRIVED', 'ARRIVED'),
 ]
+    max_time_threshold = timedelta(hours=2)
+
 
     #input handler
     def list(self, request):
         from_num = request.query_params.get('From', None)
-        reply_number = from_num if from_num else '+14169095217'
+        reply_number = self.format_phone(from_num) if from_num else '+14169095217'
         request_body = request.query_params.get('Body')
         return_body = ''
         request_user = self.User.objects.get(phone = reply_number)
@@ -64,6 +68,7 @@ current_step_options = [
                 new_thread = DirectionThread.objects.create(
                     user = request_user
                 )
+
                 send_text(self, current_step_dialog(self, new_thread), reply_number)
         else:
             store_data(latest_thread)
@@ -99,6 +104,19 @@ current_step_options = [
 
 
 
+
+        if (latest_thread and latest_thread.current_step == 'USER_LOCATION'):
+            last_thread_age = datetime.now() - latest_thread.date_time
+            if last_thread_age > self.max_time_threshold:
+                return_body = 'Your last session was {0} ago, would you like to start a new session?'.format(last_thread_age)
+
+        else:
+            return_body = 'That was not Hello'
+
+        self.send_text(return_body, reply_number)
+        return Response(request.data)
+>>>>>>> origin/master
+
     def send_text(self, return_body, reply_number):
         message = self.client.messages \
                 .create(
@@ -106,3 +124,10 @@ current_step_options = [
                      from_=self.default_number,
                      to=reply_number
                 )
+
+    def format_phone(self, phone_number):
+        # strip non-numeric characters
+        phone = re.sub(r'\D', '', phone_number)
+        # remove leading 1 (area codes never start with 1)
+        phone = phone.lstrip('1')
+        return '{}{}{}'.format(phone[0:3], phone[3:6], phone[6:])
