@@ -1,4 +1,4 @@
-# EngHack2019
+# Guidin' George
 Team: Jane Le, Josiah Parappally, Sam Yu. 
 
 # Inspiration
