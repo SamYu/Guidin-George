@@ -76,6 +76,7 @@ class SMSDirectionsViewSet(viewsets.ModelViewSet):
         elif latest_thread.current_step == 'DESTINATION':
             user_location = latest_thread.start_location
             user_lat, user_lng = self.geocode_address(user_location)
+            self.send_text('Guidin\' George is thinking...', reply_number)
             places_list = self.get_places_lst(
                 query=request_body,
                 user_lat=user_lat,
@@ -84,8 +85,14 @@ class SMSDirectionsViewSet(viewsets.ModelViewSet):
                 direction_thread=latest_thread
             )
             return_body = self.places_list_to_string(places_list)
-            self.send_text(return_body, reply_number)
-            latest_thread.increment_step()
+            if len(places_list) == 0:
+                invalid_body = 'I did not find any results for \"{}\". Please enter another destination.'.format(
+                        request_body
+                    )
+                self.send_text(invalid_body, reply_number)
+            else:
+                self.send_text(return_body, reply_number)
+                latest_thread.increment_step()
             return Response(request.data)
 
         elif latest_thread.current_step == 'DEST_CHOICES':
@@ -95,7 +102,10 @@ class SMSDirectionsViewSet(viewsets.ModelViewSet):
                 if choice_number < len(places_list):
                     selected_dest = places_list[choice_number]
                     latest_thread.end_location = selected_dest.address
-                    self.send_text('Guidin\' George is thinking...', reply_number)
+                    pending_body = 'You have selected {}. Guidin\' George is thinking...'.format(
+                        latest_thread.end_location
+                    )
+                    self.send_text(pending_body, reply_number)
                     return_body = self.lst_of_directions(
                         latest_thread.start_location,
                         latest_thread.end_location,
@@ -103,12 +113,12 @@ class SMSDirectionsViewSet(viewsets.ModelViewSet):
                     self.send_text(return_body, reply_number)
                     latest_thread.increment_step()
                     return Response(request.data)
-            else:
-                return_body = 'Invalid choice, please enter a number between 1 and {}'.format(
-                    len(places_list)
-                )
-                self.send_text(return_body, reply_number)
-                return Response(request.data)        
+                    
+            return_body = 'Invalid choice, please enter a number between 1 and {}'.format(
+                len(places_list)
+            )
+            self.send_text(return_body, reply_number)
+            return Response(request.data)        
 
         elif latest_thread.current_step == 'IN_TRANSIT':
             return_body = 'You have arrived at {}. Thank you for using Guidin\' George!'.format(
@@ -173,7 +183,8 @@ class SMSDirectionsViewSet(viewsets.ModelViewSet):
 
         full_string = "\n".join(combined_lst)
         intro = "Here are the directions: \n"
-        return(intro + full_string)
+        outro = 'Text \"Complete\" when you have arrived!'
+        return(intro + full_string + '\n' + outro)
       
     def geocode_address(self, address):
         geocode = self.gmaps.geocode(address)
