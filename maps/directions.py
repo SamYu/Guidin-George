@@ -52,7 +52,9 @@ def lst_of_directions(origin, destination):
     for index in range(len(step_lst)):
         distanceStep = step_lst[index] + "(" + distance_lst[index] + ")"
         combined_lst.append(distanceStep)
-    print(combined_lst)
+
+    full_string = " --- ".join(combined_lst)
+    return(full_string)
 
 
 
