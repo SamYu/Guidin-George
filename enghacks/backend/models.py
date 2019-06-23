@@ -44,7 +44,7 @@ class DirectionThread(models.Model):
         ('USER_LOCATION', 'USER_LOCATION'),
         ('DESTINATION', 'DESTINATION'),
         ('DEST_CHOICES', 'DEST_CHOICES'),
-        ('TRANS', 'TRANS')
+        ('IN_TRANSIT', 'IN_TRANSIT'),
         ('ARRIVED', 'ARRIVED'),
     ]
 
