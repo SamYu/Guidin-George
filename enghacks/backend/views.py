@@ -41,14 +41,13 @@ class SMSDirectionsViewSet(viewsets.ModelViewSet):
     default_number = settings.TWILIO_DEFAULT_CALLERID
     client = Client(account_sid, auth_token)
 
-current_step_options = [
-    ('USER_LOCATION', 'USER_LOCATION'),
-    ('DESTINATION', 'DESTINATION'),
-    ('DEST_CHOICES', 'DEST_CHOICES'),
-    ('ARRIVED', 'ARRIVED'),
-]
+    current_step_options = [
+        ('USER_LOCATION', 'USER_LOCATION'),
+        ('DESTINATION', 'DESTINATION'),
+        ('DEST_CHOICES', 'DEST_CHOICES'),
+        ('ARRIVED', 'ARRIVED'),
+    ]
     max_time_threshold = timedelta(hours=2)
-
 
     #input handler
     def list(self, request):
@@ -61,29 +60,42 @@ current_step_options = [
             user = request_user
         ).order_by('-date_time')
         latest_thread = user_threads[0] if len(user_threads) else None
-        new_thread = latest_thread
 
-        if request_body == 'Hi' or request_body == 'Hello':
-            if not latest_thread or latest_thread.current_step == 'ARRIVED':
-                new_thread = DirectionThread.objects.create(
-                    user = request_user
-                )
+        # NO THREAD
+        if not latest_thread or latest_thread.current_step == 'ARRIVED':
+            latest_thread = self._create_new_thread(request_user)
+            return_body = self._current_step_dialog(latest_thread)
+            self.send_text(return_body, reply_number)
 
-                send_text(self, current_step_dialog(self, new_thread), reply_number)
+        if latest_thread:
+            last_thread_age = datetime.now() - latest_thread.date_time
+            if last_thread_age > self.max_time_threshold:
+                return_body = 'Your last session was {0} ago, starting new session.'.format(last_thread_age)
+                latest_thread = self._create_new_thread(request_user)
+                self.send_text(return_body, reply_number)
+                return Response(request.data)
+            
+        # no thread
+        if not latest_thread or latest_thread.current_step == 'ARRIVED':
+            latest_thread = self._create_new_thread(request_user)
+            return_body = self._current_step_dialog(latest_thread)
+        
         else:
             store_data(latest_thread)
 
+            latest_thread.increment_step()
 
-
-
-
-            latest_thread.incrementStep()
-        #else:
-        #    return_body = 'That was not Hello'
-
+        self.send_text(return_body, reply_number)
         return Response(request.data)
-    #
-    def current_step_dialog(self, message_thread):
+
+    def _create_new_thread(self, request_user):
+        new_thread = DirectionThread.objects.create(
+                    user = request_user
+        )
+        return new_thread
+
+
+    def _current_step_dialog(self, message_thread):
         return_body = ''
         if (message_thread.current_step == 'USER_LOCATION'):
             return_body = 'Hello, this is ____. Please text back your location to begin calculating a route.'
@@ -94,28 +106,6 @@ current_step_options = [
         elif (message_thread.current_step == 'ARRIVED'):
             return_body = 'Thank you for using ____.'
         return (return_body)
-
-    def store_data(self, message_thread):
-        if message_thread.current_step == 'USER_LOCATION':
-            message_thread.start_location = request_body
-        elif message_thread.current_step == 'DESTINATION':
-            message_thread.end_location == request_body
-
-
-
-
-
-        if (latest_thread and latest_thread.current_step == 'USER_LOCATION'):
-            last_thread_age = datetime.now() - latest_thread.date_time
-            if last_thread_age > self.max_time_threshold:
-                return_body = 'Your last session was {0} ago, would you like to start a new session?'.format(last_thread_age)
-
-        else:
-            return_body = 'That was not Hello'
-
-        self.send_text(return_body, reply_number)
-        return Response(request.data)
->>>>>>> origin/master
 
     def send_text(self, return_body, reply_number):
         message = self.client.messages \

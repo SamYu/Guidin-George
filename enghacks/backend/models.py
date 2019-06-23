@@ -74,10 +74,40 @@ class DirectionThread(models.Model):
         auto_now=False,
     )
 
-    def incrementStep(self):
+    def increment_step(self):
         current_step = self.current_step
         current_step_index = self.current_step_options.index(current_step)
 
         self.update(
             current_step=self.current_step_options[current_step_index + 1]
         )
+
+    def store_data(self, message_thread):
+        if message_thread.current_step == 'USER_LOCATION':
+            message_thread.start_location = request_body
+        elif message_thread.current_step == 'DESTINATION':
+            message_thread.end_location == request_body
+
+
+class Place(models.Model):
+    direction_thread = models.ForeignKey(
+        DirectionThread,
+        on_delete=models.CASCADE,
+        related_name='places_list'
+    )
+    name = models.CharField(
+        max_length=50,
+        blank=False,
+    )
+    distance = models.DecimalField(
+        decimal_places=1,
+        blank=False,
+        max_digits=4,
+    )
+    address = models.CharField(
+        max_length=100,
+        blank=False,
+    )
+    estimated_time = models.DurationField(
+        blank=False,
+    )
