@@ -99,18 +99,33 @@ class SMSDirectionsViewSet(viewsets.ModelViewSet):
                 latest_thread = self._create_new_thread(request_user)
                 self.send_text(return_body, reply_number)
                 return Response(request.data)
-            
-        # no thread
+        # no thread or arrived
         if not latest_thread or latest_thread.current_step == 'ARRIVED':
             latest_thread = self._create_new_thread(request_user)
             return_body = self._current_step_dialog(latest_thread)
-        
-        else:
-            store_data(latest_thread)
 
+        elif latest_thread.current_step == 'USER_LOCATION':
+            latest_thread.start_location = request_body
+            latest_thread.save
+            return_body = self._current_step_dialog(latest_thread)
+            self.send_text(return_body, reply_number)
             latest_thread.increment_step()
 
-        self.send_text(return_body, reply_number)
+        elif latest_thread.current_step == 'DESTINATION':
+            ## some query function here using the input
+            return_body = self._current_step_dialog(latest_thread)
+            self.send_text(return_body, reply_number)
+            latest_thread.increment_step()
+
+        elif latest_thread.current_step == 'DEST_CHOICES':
+            #sam's stuff here
+            return_body = self._current_step_dialog(latest_thread)
+
+        elif latest_thread.current_step == 'TRANS':
+            latest_thread.increment_step()
+            return_body = self._current_step_dialog(latest_thread)
+            self.send_text(return_body, reply_number)
+
         return Response(request.data)
 
     def _create_new_thread(self, request_user):
@@ -127,7 +142,7 @@ class SMSDirectionsViewSet(viewsets.ModelViewSet):
         elif (message_thread.current_step == 'DESTINATION'):
             return_body = 'Please text back your destination.'
         elif (message_thread.current_step == 'DEST_CHOICES'):
-            return_body = 'Here are your options '
+            return_body = 'Here are your options: '
         elif (message_thread.current_step == 'ARRIVED'):
             return_body = 'Thank you for using ____.'
         return (return_body)
