@@ -41,32 +41,44 @@ class UserHealthInformation(models.Model):
 class DirectionThread(models.Model): 
 
     current_step_options = [
-        'USER_LOCATION',
-        'DESTINATION',
-        'DEST_CHOICES',
-        'ARRIVED',
+        ('USER_LOCATION', 'USER_LOCATION'),
+        ('DESTINATION', 'DESTINATION'),
+        ('DEST_CHOICES', 'DEST_CHOICES'),
+        ('ARRIVED', 'ARRIVED'),
     ]
     
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL
     )
     current_step = models.CharField(
+        max_length=13,
         choices=current_step_options,
         default=current_step_options[0]
     )
     date_time = models.DateTimeField(
         auto_now=True,
     )
-    start_location = models.CharField()
-    end_location = models.CharField()
-    completed_at = models.DateTimeField()
+    start_location = models.CharField(
+        null=True,
+        blank=True,
+        max_length=30,
+    )
+    end_location = models.CharField(
+        null=True,
+        blank=True,
+        max_length=30,
+    )
+    completed_at = models.DateTimeField(
+        null=True,
+        auto_now=False,
+    )
 
-    # def incrementStep(self):
-    #     current_step = self.current_step
-    #     current_step_index = self.current_step_options.index(current_step)
+    def incrementStep(self):
+        current_step = self.current_step
+        current_step_index = self.current_step_options.index(current_step)
 
-    #     self.update(
-    #         current_step=self.current_step_options[current_step_index + 1]
-    #     )
+        self.update(
+            current_step=self.current_step_options[current_step_index + 1]
+        )
 
         

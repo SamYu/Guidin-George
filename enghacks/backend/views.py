@@ -54,13 +54,11 @@ class SMSDirectionsViewSet(viewsets.ModelViewSet):
 
         return Response(request.data)
 
-    def sendText(return_body):
+    def sendText(self, return_body):
+        reply_number = 'test'
         message = self.client.messages \
                 .create(
                      body=return_body,
                      from_=self.default_number,
                      to=reply_number
                 )
-
-
-    def something():
