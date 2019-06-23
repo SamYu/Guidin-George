@@ -48,7 +48,9 @@ class SMSDirectionsViewSet(viewsets.ModelViewSet):
         latest_thread = user_threads[0] if len(user_threads) else None
         if not latest_thread or latest_thread.current_step == 'ARRIVED':
             latest_thread = self._create_new_thread(request_user)
-            return_body = 'Welcome to Guidin\' George. Please text back your current location.'
+            return_body = 'Hi {}, I\'m Guidin\' George! What\'s your location?'.format(
+                request_user.first_name
+            )
             self.send_text(return_body, reply_number)
             return Response(request.data)
 
@@ -56,7 +58,9 @@ class SMSDirectionsViewSet(viewsets.ModelViewSet):
             last_thread_age = timezone.now() - latest_thread.date_time
             if last_thread_age > self.max_time_threshold:
                 return_body = 'Your last session was {0} ago, starting new session.'.format(last_thread_age) +\
-                    'Welcome to Guidin\' George. Please text back your current location.'
+                    'Hi {}, I\'m Guidin\' George! What\'s your location?'.format(
+                    request_user.first_name
+                )
                 latest_thread = self._create_new_thread(request_user)
                 self.send_text(return_body, reply_number)
                 return Response(request.data)
@@ -64,7 +68,7 @@ class SMSDirectionsViewSet(viewsets.ModelViewSet):
         if latest_thread.current_step == 'USER_LOCATION':
             latest_thread.start_location = request_body
             latest_thread.save
-            return_body = 'Where would you like to go? (Address)'
+            return_body = 'Where would you like to go? (Please enter your address)'
             self.send_text(return_body, reply_number)
             latest_thread.increment_step()
             return Response(request.data)
@@ -85,7 +89,7 @@ class SMSDirectionsViewSet(viewsets.ModelViewSet):
             return Response(request.data)
 
         elif latest_thread.current_step == 'DEST_CHOICES':
-            places_list = latest_thread.places_list.all()
+            places_list = latest_thread.places_list.order_by('distance')
             if self.is_integer(request_body):
                 choice_number = int(request_body) - 1
                 if choice_number < len(places_list):
@@ -106,7 +110,9 @@ class SMSDirectionsViewSet(viewsets.ModelViewSet):
                 return Response(request.data)        
 
         elif latest_thread.current_step == 'IN_TRANSIT':
-            return_body = 'Thank you for using Guidin\' George'
+            return_body = 'You have arrived at {}. Thank you for using Guidin\' George!'.format(
+                latest_thread.end_location
+            )
             self.send_text(return_body, reply_number)
             latest_thread.increment_step()
         return Response(request.data)
