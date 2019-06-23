@@ -4,7 +4,7 @@ import urllib
 from urllib import urlencode
 from datetime import datetime
 import unicodedata
-from bs4 import BeautifulSoup
+import re
 
 gmaps = googlemaps.Client(key='AIzaSyBadB6G00B0XCY3GoybhFADV9ZnrOP_Usw')
 
@@ -34,12 +34,23 @@ def lst_of_directions(origin, destination):
     directionsObj = gmaps.directions(origin, destination, "walking")
     # return(directionsObj[0]['overview_polyline']['warnings'])
     x = (directionsObj[0]['legs'][0]['steps'])
-    new_lst = []
+    
+    distance_lst = []
     for elem in x:
-        new_lst.append(elem['html_instructions'])
-    new_lst1 = []
+        distance_lst.append(str(elem['distance']['text']))
+
+    step_lst = []
+    for elem in x:
+        step_lst.append(str(elem['html_instructions']))
+    new_lst2 = []
     for elem in new_lst:
-        new_lst1.append(str(elem))
+        elem = re.sub('<.*?>', ' ', elem)
+        new_lst2.append(elem)
+    combined_lst = []
+    # for elem in new_lst1:
+    #     elem = re.sub('<.*?>', ' ', elem)
+    #     new_lst2.append(elem)
+    # print(new_lst2)
 
 
 
