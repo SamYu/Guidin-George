@@ -31,6 +31,33 @@ class UserLoginViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserLoginSerializer
 
+def lst_of_directions(origin, destination):
+    directionsObj = gmaps.directions(origin, destination, "walking")
+    # return(directionsObj[0]['overview_polyline']['warnings'])
+    x = (directionsObj[0]['legs'][0]['steps'])
+
+    distance_lst = []
+    for elem in x:
+        distance_lst.append(str(elem['distance']['text']))
+
+    step_lst_html = []
+    for elem in x:
+        step_lst_html.append(str(elem['html_instructions']))
+
+    step_lst = []
+    for elem in step_lst_html:
+        elem = re.sub('<.*?>', ' ', elem)
+        step_lst.append(elem)
+
+    combined_lst = []
+    for index in range(len(step_lst)):
+        distanceStep = step_lst[index] + "(" + distance_lst[index] + ")"
+        combined_lst.append(distanceStep)
+
+    full_string = " --- ".join(combined_lst)
+    intro = "Here are the directions: "
+    return(intro + full_string)
+
 class SMSDirectionsViewSet(viewsets.ModelViewSet):
     User = get_user_model()
     serializer_class = UserLoginSerializer
@@ -168,7 +195,7 @@ class SMSDirectionsViewSet(viewsets.ModelViewSet):
         # remove leading 1 (area codes never start with 1)
         phone = phone.lstrip('1')
         return '{}{}{}'.format(phone[0:3], phone[3:6], phone[6:])
-
+   
     def lst_of_directions(self, origin, destination):
         directionsObj = self.gmaps.directions(origin, destination, "walking")
         # return(directionsObj[0]['overview_polyline']['warnings'])
@@ -201,3 +228,4 @@ class SMSDirectionsViewSet(viewsets.ModelViewSet):
         lat = geocode[0]['geometry']['location']['lat']
         lng = geocode[0]['geometry']['location']['lng']
         return lat, lng
+
