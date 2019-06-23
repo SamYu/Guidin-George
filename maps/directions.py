@@ -34,23 +34,26 @@ def lst_of_directions(origin, destination):
     directionsObj = gmaps.directions(origin, destination, "walking")
     # return(directionsObj[0]['overview_polyline']['warnings'])
     x = (directionsObj[0]['legs'][0]['steps'])
-    
+
     distance_lst = []
     for elem in x:
         distance_lst.append(str(elem['distance']['text']))
 
-    step_lst = []
+    step_lst_html = []
     for elem in x:
-        step_lst.append(str(elem['html_instructions']))
-    new_lst2 = []
-    for elem in new_lst:
+        step_lst_html.append(str(elem['html_instructions']))
+
+    step_lst = []
+    for elem in step_lst_html:
         elem = re.sub('<.*?>', ' ', elem)
-        new_lst2.append(elem)
+        step_lst.append(elem)
+
     combined_lst = []
-    # for elem in new_lst1:
-    #     elem = re.sub('<.*?>', ' ', elem)
-    #     new_lst2.append(elem)
-    # print(new_lst2)
+    for index in range(len(step_lst)):
+        distanceStep = step_lst[index] + "(" + distance_lst[index] + ")"
+        combined_lst.append(distanceStep)
+    print(combined_lst)
+
 
 
 
