@@ -46,24 +46,25 @@ class SMSDirectionsViewSet(viewsets.ModelViewSet):
             user = request_user
         ).order_by('-date_time')
         latest_thread = user_threads[0] if len(user_threads) else None
-
         if not latest_thread or latest_thread.current_step == 'ARRIVED':
             latest_thread = self._create_new_thread(request_user)
-            return_body = self._current_step_dialog(latest_thread)
+            return_body = 'Welcome to Guidin\' George. Please text back your current location.'
             self.send_text(return_body, reply_number)
             return Response(request.data)
 
         if latest_thread:
             last_thread_age = timezone.now() - latest_thread.date_time
             if last_thread_age > self.max_time_threshold:
-                return_body = 'Your last session was {0} ago, starting new session.'.format(last_thread_age)
+                return_body = 'Your last session was {0} ago, starting new session.'.format(last_thread_age) +\
+                    'Welcome to Guidin\' George. Please text back your current location.'
                 latest_thread = self._create_new_thread(request_user)
                 self.send_text(return_body, reply_number)
-                return Response(request.data)      
-        elif latest_thread.current_step == 'USER_LOCATION':
+                return Response(request.data)
+
+        if latest_thread.current_step == 'USER_LOCATION':
             latest_thread.start_location = request_body
             latest_thread.save
-            return_body = self._current_step_dialog(latest_thread)
+            return_body = 'Where would you like to go? (Address)'
             self.send_text(return_body, reply_number)
             latest_thread.increment_step()
             return Response(request.data)
@@ -84,7 +85,7 @@ class SMSDirectionsViewSet(viewsets.ModelViewSet):
             return Response(request.data)
 
         elif latest_thread.current_step == 'DEST_CHOICES':
-            places_list = latest_thread.places_list
+            places_list = latest_thread.places_list.all()
             if self.is_integer(request_body):
                 choice_number = int(request_body) - 1
                 if choice_number < len(places_list):
@@ -105,9 +106,9 @@ class SMSDirectionsViewSet(viewsets.ModelViewSet):
                 return Response(request.data)        
 
         elif latest_thread.current_step == 'IN_TRANSIT':
-            latest_thread.increment_step()
-            return_body = self._current_step_dialog(latest_thread)
+            return_body = 'Thank you for using Guidin\' George'
             self.send_text(return_body, reply_number)
+            latest_thread.increment_step()
         return Response(request.data)
 
 
@@ -124,17 +125,6 @@ class SMSDirectionsViewSet(viewsets.ModelViewSet):
                     user = request_user
         )
         return new_thread
-
-
-    def _current_step_dialog(self, message_thread):
-        return_body = ''
-        if not message_thread or message_thread.current_step == 'ARRIVED':
-            return_body = 'Hello, this is ____. Please text back your location to begin calculating a route.'
-        elif (message_thread.current_step == 'USER_LOCATION'):
-            return_body = 'Please text back your destination.'
-        elif (message_thread.current_step == 'IN_TRANS'):
-            return_body = 'Thank you for using ____.'
-        return (return_body)
 
     def send_text(self, return_body, reply_number):
         self.client.messages \
@@ -174,8 +164,8 @@ class SMSDirectionsViewSet(viewsets.ModelViewSet):
             distanceStep = step_lst[index] + "(" + distance_lst[index] + ")"
             combined_lst.append(distanceStep)
 
-        full_string = " --- ".join(combined_lst)
-        intro = "Here are the directions: "
+        full_string = "\n".join(combined_lst)
+        intro = "Here are the directions: \n"
         return(intro + full_string)
       
     def geocode_address(self, address):
@@ -188,10 +178,11 @@ class SMSDirectionsViewSet(viewsets.ModelViewSet):
         place1 = (lat1, long1)
         place2 = (lat2, long2)
         distance_in_km = round(geodesic(place1, place2).km, 2)
-        if distance_in_km < 1:
-            return str(distance_in_km * 1000) + "m"
-        else:
-            return str(distance_in_km) + " km"
+        return distance_in_km
+        # if distance_in_km < 1:
+        #     return str(distance_in_km * 1000) + "m"
+        # else:
+        #     return str(distance_in_km) + " km"
 
     def get_places_lst(self, query, user_lat, user_lng, radius, direction_thread):
         location = str(user_lat) + ', ' + str(user_lng)
@@ -202,7 +193,7 @@ class SMSDirectionsViewSet(viewsets.ModelViewSet):
             name = place['name']
             lat = float(place['geometry']['location']['lat'])
             lng = float(place['geometry']['location']['lng'])
-            distance_str = self.calculate_distance(
+            distance = self.calculate_distance(
                 lat1=user_lat,
                 long1=user_lng,
                 lat2=lat,
@@ -212,19 +203,21 @@ class SMSDirectionsViewSet(viewsets.ModelViewSet):
                 address=address,
                 name=name,
                 direction_thread=direction_thread,
-                distance=distance_str,
+                distance=distance,
             )
             places_array.append(new_place)
-        return places_array
+        places_array.sort(key=lambda place: place.distance)
+        return places_array[:5]
 
     def places_list_to_string(self, list_of_places):
         counter = 1
         text_lst = []
         for place in list_of_places:
             place_string = ""
-            place_string += '[' + str(counter) + '] ' + place.name + "," + place.address + "," + '(' + place.distance + ')'
+            place_string += '[' + str(counter) + '] ' + place.name + "," + place.address + "," + '(' + str(place.distance) + ' km' + ')'
             text_lst.append(place_string)
             counter += 1
-        full_string = " --- ".join(text_lst)
+        full_string = "\n".join(text_lst)
+        full_string = 'Please select a number from the list (e.g: 1) \n' + full_string
         return full_string
 

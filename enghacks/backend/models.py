@@ -42,11 +42,11 @@ class UserHealthInformation(models.Model):
 class DirectionThread(models.Model):
 
     current_step_options = [
-        ('USER_LOCATION', 'USER_LOCATION'),
-        ('DESTINATION', 'DESTINATION'),
-        ('DEST_CHOICES', 'DEST_CHOICES'),
-        ('IN_TRANSIT', 'IN_TRANSIT'),
-        ('ARRIVED', 'ARRIVED'),
+        'USER_LOCATION',
+        'DESTINATION',
+        'DEST_CHOICES',
+        'IN_TRANSIT',
+        'ARRIVED',
     ]
 
     user = models.ForeignKey(
@@ -55,8 +55,7 @@ class DirectionThread(models.Model):
     )
     current_step = models.CharField(
         max_length=13,
-        choices=current_step_options,
-        default=current_step_options[0][0]
+        default=current_step_options[0]
     )
     date_time = models.DateTimeField(
         default=now,
@@ -64,12 +63,12 @@ class DirectionThread(models.Model):
     start_location = models.CharField(
         null=True,
         blank=True,
-        max_length=30,
+        max_length=100,
     )
     end_location = models.CharField(
         null=True,
         blank=True,
-        max_length=30,
+        max_length=100,
     )
     completed_at = models.DateTimeField(
         null=True,
@@ -80,9 +79,8 @@ class DirectionThread(models.Model):
         current_step = self.current_step
         current_step_index = self.current_step_options.index(current_step)
 
-        self.update(
-            current_step=self.current_step_options[current_step_index + 1]
-        )
+        self.current_step = self.current_step_options[current_step_index + 1]
+        self.save()
 
 class Place(models.Model):
     direction_thread = models.ForeignKey(
@@ -94,8 +92,9 @@ class Place(models.Model):
         max_length=50,
         blank=False,
     )
-    distance = models.CharField(
-        max_length=10,
+    distance = models.DecimalField(
+        max_digits=6,
+        decimal_places=2,
         blank=False,
     )
     address = models.CharField(
