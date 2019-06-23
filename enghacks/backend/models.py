@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.contrib.postgres.fields import ArrayField
 from django.conf import settings
+from django.utils.timezone import now
 
 class User(AbstractUser):
     first_name = models.CharField(max_length=30)
@@ -58,7 +59,7 @@ class DirectionThread(models.Model):
         default=current_step_options[0][0]
     )
     date_time = models.DateTimeField(
-        auto_now=True,
+        default=now,
     )
     start_location = models.CharField(
         null=True,

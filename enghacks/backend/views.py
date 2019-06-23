@@ -10,6 +10,7 @@ from backend.models import DirectionThread, Place
 from twilio.twiml.messaging_response import MessagingResponse
 from twilio.rest import Client
 from datetime import datetime, timedelta
+from django.utils import timezone
 import re
 import googlemaps
 from geopy.distance import geodesic
@@ -53,7 +54,7 @@ class SMSDirectionsViewSet(viewsets.ModelViewSet):
             return Response(request.data)
 
         if latest_thread:
-            last_thread_age = datetime.now() - latest_thread.date_time
+            last_thread_age = timezone.now() - latest_thread.date_time
             if last_thread_age > self.max_time_threshold:
                 return_body = 'Your last session was {0} ago, starting new session.'.format(last_thread_age)
                 latest_thread = self._create_new_thread(request_user)
