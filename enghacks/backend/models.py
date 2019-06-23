@@ -83,15 +83,6 @@ class DirectionThread(models.Model):
             current_step=self.current_step_options[current_step_index + 1]
         )
 
-    def store_data(self):
-        if self.current_step == 'USER_LOCATION':
-            self.start_location = request_body
-        elif self.current_step == 'DESTINATION':
-            self.end_location == request_body
-        
-
-
-
 class Place(models.Model):
     direction_thread = models.ForeignKey(
         DirectionThread,
@@ -102,15 +93,11 @@ class Place(models.Model):
         max_length=50,
         blank=False,
     )
-    distance = models.DecimalField(
-        decimal_places=1,
+    distance = models.CharField(
+        max_length=10,
         blank=False,
-        max_digits=4,
     )
     address = models.CharField(
         max_length=100,
-        blank=False,
-    )
-    estimated_time = models.DurationField(
         blank=False,
     )
