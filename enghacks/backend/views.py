@@ -46,7 +46,7 @@ class SMSDirectionsViewSet(viewsets.ModelViewSet):
             user = request_user
         ).order_by('-date_time')
         latest_thread = user_threads[0] if len(user_threads) else None
-        if not latest_thread or latest_thread.current_step == 'ARRIVED':
+        if request_body == 'Reset' or not latest_thread or latest_thread.current_step == 'ARRIVED':
             latest_thread = self._create_new_thread(request_user)
             return_body = 'Hi {}, I\'m Guidin\' George! What\'s your location?'.format(
                 request_user.first_name
@@ -68,7 +68,7 @@ class SMSDirectionsViewSet(viewsets.ModelViewSet):
         if latest_thread.current_step == 'USER_LOCATION':
             latest_thread.start_location = request_body
             latest_thread.save
-            return_body = 'Where would you like to go? (Please enter your address)'
+            return_body = 'Where would you like to go? (Please enter an address)'
             self.send_text(return_body, reply_number)
             latest_thread.increment_step()
             return Response(request.data)
@@ -95,6 +95,7 @@ class SMSDirectionsViewSet(viewsets.ModelViewSet):
                 if choice_number < len(places_list):
                     selected_dest = places_list[choice_number]
                     latest_thread.end_location = selected_dest.address
+                    self.send_text('Guidin\' George is thinking...', reply_number)
                     return_body = self.lst_of_directions(
                         latest_thread.start_location,
                         latest_thread.end_location,
