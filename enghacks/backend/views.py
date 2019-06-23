@@ -32,7 +32,6 @@ class SMSDirectionsViewSet(viewsets.ModelViewSet):
     max_time_threshold = timedelta(hours=2)
     gmaps = googlemaps.Client(key=settings.GOOGLE_MAPS_KEY)
 
-    #input handler
     def list(self, request):
         from_num = request.query_params.get('From', None)
         if from_num:
@@ -78,8 +77,7 @@ class SMSDirectionsViewSet(viewsets.ModelViewSet):
                 radius=5,
                 direction_thread=latest_thread
             )
-            ## ADD PRINT PLACES LIST FUNCTION
-            return_body = self._current_step_dialog(latest_thread)
+            return_body = self.places_list_to_string(places_list)
             self.send_text(return_body, reply_number)
             latest_thread.increment_step()
             return Response(request.data)
@@ -91,7 +89,6 @@ class SMSDirectionsViewSet(viewsets.ModelViewSet):
                 if choice_number < len(places_list):
                     selected_dest = places_list[choice_number]
                     latest_thread.end_location = selected_dest.address
-                    # JOSIAH'S FUNCTION
                     return_body = self.lst_of_directions(
                         latest_thread.start_location,
                         latest_thread.end_location,
@@ -110,7 +107,6 @@ class SMSDirectionsViewSet(viewsets.ModelViewSet):
             latest_thread.increment_step()
             return_body = self._current_step_dialog(latest_thread)
             self.send_text(return_body, reply_number)
-
         return Response(request.data)
 
 
@@ -219,4 +215,15 @@ class SMSDirectionsViewSet(viewsets.ModelViewSet):
             )
             places_array.append(new_place)
         return places_array
+
+    def places_list_to_string(self, list_of_places):
+        counter = 1
+        text_lst = []
+        for place in list_of_places:
+            place_string = ""
+            place_string += '[' + str(counter) + '] ' + place.name + "," + place.address + "," + '(' + place.distance + ')'
+            text_lst.append(place_string)
+            counter += 1
+        full_string = " --- ".join(text_lst)
+        return full_string
 
