@@ -29,6 +29,7 @@ class UserLoginViewSet(viewsets.ModelViewSet):
     serializer_class = UserLoginSerializer
 
 
+
 class SMSDirectionsViewSet(viewsets.ModelViewSet):
     serializer_class = UserLoginSerializer
 
@@ -36,7 +37,9 @@ class SMSDirectionsViewSet(viewsets.ModelViewSet):
     auth_token = settings.TWILIO_AUTH_TOKEN
     default_number = settings.TWILIO_DEFAULT_CALLERID
     client = Client(account_sid, auth_token)
-    
+
+
+    #input handler
     def list(self, request):
         import pdb; pdb.set_trace()
         from_num = request.query_params.get('From', None)
@@ -44,15 +47,21 @@ class SMSDirectionsViewSet(viewsets.ModelViewSet):
 
         request_body = request.query_params.get('Body')
 
-        if request_body == 'Hello':
-            return_body = 'Do you need help?'
-        else: 
+        if (request_body == 'Hi' or request_body == 'Hello'):
+            return_body = 'Hello, this is _____.\n Text back 1, 2, 3'
+
+        else:
             return_body = 'That was not Hello'
 
+        return Response(request.data)
+
+    def sendText(return_body):
         message = self.client.messages \
                 .create(
                      body=return_body,
                      from_=self.default_number,
                      to=reply_number
-                 )
-        return Response(request.data)
+                )
+
+
+    def something():
