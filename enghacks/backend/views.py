@@ -30,6 +30,31 @@ class UserLoginViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserLoginSerializer
 
+def lst_of_directions(origin, destination):
+    directionsObj = gmaps.directions(origin, destination, "walking")
+    # return(directionsObj[0]['overview_polyline']['warnings'])
+    x = (directionsObj[0]['legs'][0]['steps'])
+
+    distance_lst = []
+    for elem in x:
+        distance_lst.append(str(elem['distance']['text']))
+
+    step_lst_html = []
+    for elem in x:
+        step_lst_html.append(str(elem['html_instructions']))
+
+    step_lst = []
+    for elem in step_lst_html:
+        elem = re.sub('<.*?>', ' ', elem)
+        step_lst.append(elem)
+
+    combined_lst = []
+    for index in range(len(step_lst)):
+        distanceStep = step_lst[index] + "(" + distance_lst[index] + ")"
+        combined_lst.append(distanceStep)
+
+    full_string = " --- ".join(combined_lst)
+    return(full_string)
 
 
 class SMSDirectionsViewSet(viewsets.ModelViewSet):
@@ -45,6 +70,7 @@ class SMSDirectionsViewSet(viewsets.ModelViewSet):
         ('USER_LOCATION', 'USER_LOCATION'),
         ('DESTINATION', 'DESTINATION'),
         ('DEST_CHOICES', 'DEST_CHOICES'),
+        ('IN_TRANSIT', 'IN_TRANSIT'),
         ('ARRIVED', 'ARRIVED'),
     ]
     max_time_threshold = timedelta(hours=2)
@@ -74,11 +100,23 @@ class SMSDirectionsViewSet(viewsets.ModelViewSet):
                 latest_thread = self._create_new_thread(request_user)
                 self.send_text(return_body, reply_number)
                 return Response(request.data)
-            
-        # no thread
+        # no thread or arrived
         if not latest_thread or latest_thread.current_step == 'ARRIVED':
             latest_thread = self._create_new_thread(request_user)
             return_body = self._current_step_dialog(latest_thread)
+        
+        elif latest_thread.current_step == 'USER_LOCATION':
+            latest_thread.start_location = request_body
+            latest_thread.save
+            return_body = self._current_step_dialog(latest_thread)
+            self.send_text(return_body, reply_number)
+            latest_thread.increment_step()
+
+        elif latest_thread.current_step == 'DESTINATION':
+            ## some query function here using the input
+            return_body = self._current_step_dialog(latest_thread)
+            self.send_text(return_body, reply_number)
+            latest_thread.increment_step()
 
         elif latest_thread.current_step == 'DEST_CHOICES':
             places_list = latest_thread.places_list
@@ -100,9 +138,13 @@ class SMSDirectionsViewSet(viewsets.ModelViewSet):
                     len(places_list)
                 )
                 self.send_text(return_body, reply_number)
-                return Response(request.data)
+                return Response(request.data)        
 
-        self.send_text(return_body, reply_number)
+        elif latest_thread.current_step == 'IN_TRANSIT':
+            latest_thread.increment_step()
+            return_body = self._current_step_dialog(latest_thread)
+            self.send_text(return_body, reply_number)
+
         return Response(request.data)
 
 
@@ -128,7 +170,7 @@ class SMSDirectionsViewSet(viewsets.ModelViewSet):
         elif (message_thread.current_step == 'DESTINATION'):
             return_body = 'Please text back your destination.'
         elif (message_thread.current_step == 'DEST_CHOICES'):
-            return_body = 'Here are your options '
+            return_body = 'Here are your options: '
         elif (message_thread.current_step == 'ARRIVED'):
             return_body = 'Thank you for using ____.'
         return (return_body)
@@ -147,3 +189,4 @@ class SMSDirectionsViewSet(viewsets.ModelViewSet):
         # remove leading 1 (area codes never start with 1)
         phone = phone.lstrip('1')
         return '{}{}{}'.format(phone[0:3], phone[3:6], phone[6:])
+      

@@ -44,6 +44,7 @@ class DirectionThread(models.Model):
         ('USER_LOCATION', 'USER_LOCATION'),
         ('DESTINATION', 'DESTINATION'),
         ('DEST_CHOICES', 'DEST_CHOICES'),
+        ('IN_TRANSIT', 'IN_TRANSIT'),
         ('ARRIVED', 'ARRIVED'),
     ]
 
@@ -82,11 +83,13 @@ class DirectionThread(models.Model):
             current_step=self.current_step_options[current_step_index + 1]
         )
 
-    def store_data(self, message_thread):
-        if message_thread.current_step == 'USER_LOCATION':
-            message_thread.start_location = request_body
-        elif message_thread.current_step == 'DESTINATION':
-            message_thread.end_location == request_body
+    def store_data(self):
+        if self.current_step == 'USER_LOCATION':
+            self.start_location = request_body
+        elif self.current_step == 'DESTINATION':
+            self.end_location == request_body
+        
+
 
 
 class Place(models.Model):
