@@ -1,5 +1,7 @@
 import googlemaps
 import json
+import urllib
+from urllib import urlencode
 from datetime import datetime
 
 gmaps = googlemaps.Client(key='AIzaSyBadB6G00B0XCY3GoybhFADV9ZnrOP_Usw')
@@ -27,8 +29,13 @@ gmaps = googlemaps.Client(key='AIzaSyBadB6G00B0XCY3GoybhFADV9ZnrOP_Usw')
 #
 
 def lst_of_directions(origin, destination):
-    directions_result = gmaps.directions(origin, destination, "walking")
-    pretty_directions_result = json.dumps(directions_result)
-    return pretty_directions_result.type()
+    directionsObj = gmaps.directions(origin, destination, "walking")
+    # return(directionsObj[0]['overview_polyline']['warnings'])
+    new_lst = []
+    x = (directionsObj[0]['legs'][0]['steps'])
+    new_lst = []
+    for elem in x:
+        new_lst.append(elem['html_instructions'])
+    print(new_lst)
 
 print(lst_of_directions("Mavis and Bristol", "Mavis and Eglinton"))
