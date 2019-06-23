@@ -38,7 +38,7 @@ class UserHealthInformation(models.Model):
         size=20
     )
 
-class DirectionThread(models.Model): 
+class DirectionThread(models.Model):
 
     current_step_options = [
         ('USER_LOCATION', 'USER_LOCATION'),
@@ -46,9 +46,10 @@ class DirectionThread(models.Model):
         ('DEST_CHOICES', 'DEST_CHOICES'),
         ('ARRIVED', 'ARRIVED'),
     ]
-    
+
     user = models.ForeignKey(
-        settings.AUTH_USER_MODEL
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
     )
     current_step = models.CharField(
         max_length=13,
@@ -80,5 +81,3 @@ class DirectionThread(models.Model):
         self.update(
             current_step=self.current_step_options[current_step_index + 1]
         )
-
-        
