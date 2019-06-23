@@ -38,7 +38,6 @@ class SMSDirectionsViewSet(viewsets.ModelViewSet):
     client = Client(account_sid, auth_token)
     
     def list(self, request):
-        import pdb; pdb.set_trace()
         from_num = request.query_params.get('From', None)
         reply_number = from_num if from_num else '+14169095217'
 
