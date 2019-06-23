@@ -6,7 +6,7 @@ from django.conf import settings
 class User(AbstractUser):
     first_name = models.CharField(max_length=30)
     last_name = models.CharField(max_length=30)
-    phone = models.CharField(max_length=10, default='')
+    phone = models.CharField(max_length=10, blank=False, unique=True)
     email = models.EmailField()
     city = models.CharField(max_length=30)
 
@@ -54,7 +54,7 @@ class DirectionThread(models.Model):
     current_step = models.CharField(
         max_length=13,
         choices=current_step_options,
-        default=current_step_options[0]
+        default=current_step_options[0][0]
     )
     date_time = models.DateTimeField(
         auto_now=True,
