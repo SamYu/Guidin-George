@@ -193,7 +193,8 @@ class SMSDirectionsViewSet(viewsets.ModelViewSet):
             combined_lst.append(distanceStep)
 
         full_string = " --- ".join(combined_lst)
-        return(full_string)
+        intro = "Here are the directions: "
+        return(intro + full_string)
       
     def geocode_address(self, address):
         geocode = self.gmaps.geocode(address)
