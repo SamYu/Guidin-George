@@ -5,6 +5,7 @@ import time
 API_KEY = "AIzaSyBadB6G00B0XCY3GoybhFADV9ZnrOP_Usw"
 
 # define client
+from enghacks.backend.models import Place
 
 gmaps = googlemaps.Client(key= API_KEY)
 
@@ -18,7 +19,9 @@ gmaps = googlemaps.Client(key= API_KEY)
 #
 # test_func()
 
-def places_lst(query, location, radius):
+def places_lst(query, user_lat, user_lng, radius):
+
+    location = str(user_lat) + ", " + str(user_lng)
     places_result = gmaps.places(query, location, radius)
     import pdb; pdb.set_trace()
     return(places_result['results'])
@@ -34,4 +37,13 @@ def places_lst(query, location, radius):
         #     name=name
         # )
 
-pprint(places_lst("McDonalds", "43.589046, -79.644119", 5))
+def po_to_text(lop):
+    counter = 1
+    text_lst = []
+    for place in lop:
+        str = ""
+        str = str + str(counter) + ". " + place.name + "," place.address + "," + place.distance + " away.")
+        text_lst.append(str)
+        counter ++
+    full_string = " --- ".join(text_lst)
+    print(full_string)
