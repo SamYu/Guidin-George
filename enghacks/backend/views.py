@@ -31,6 +31,7 @@ class UserLoginViewSet(viewsets.ModelViewSet):
 
 
 class SMSDirectionsViewSet(viewsets.ModelViewSet):
+    User = get_user_model()
     serializer_class = UserLoginSerializer
 
     account_sid = settings.TWILIO_ACCOUNT_SID
@@ -44,23 +45,19 @@ class SMSDirectionsViewSet(viewsets.ModelViewSet):
         from_num = request.query_params.get('From', None)
         reply_number = from_num if from_num else '+14169095217'
         request_body = request.query_params.get('Body')
-
+        request_user = self.User.objects.get(phone = reply_number)
+        user_threads = DirectionThread.objects.filter(
+            user = request_user
+        ).order_by('-date_time')
+        latest_thread = user_threads[0] if len(user_threads) else None
 
         if (request_body == 'Hi' or request_body == 'Hello'):
-            request_user = User.objects.get(phone = reply_number)
-            user_threads = DirectionThread.objects.filter(
-                user = request_user
-            ).order_by('-date_time')
-            latest_thread = user_threds[0] if len(user_thread) else None
             if not latest_thread or latest_thread.current_step == 'ARRIVED':
                 new_thread = DirectionThread.objects.create(
                     user = request_user
                 )
             else:
                 new_thread = latest_thread
-
-
-
 
         else:
             return_body = 'That was not Hello'
