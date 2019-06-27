@@ -19,10 +19,10 @@ It was difficult to maintain a conversational flow for Guidin' George, consideri
 We started a web-app for new users to register their phone numbers to Guidin' George but did not complete the back-end. In addition, we're thinking of adding security features to Guidin' George such as collecting the last location of the user and if they have not arrived within a certain time frame, Guidin' George sends a search party.
 
 # Built With
-python 3
-django
-twilio
-google-cloud
-google-directions api
-google-places api 
-django-rest-framework
+python 3,
+django,
+twilio,
+google-cloud,
+google-directions api,
+google-places api,
+django-rest-framework.
