@@ -1,10 +1,15 @@
 # Guidin' George
-Team: Jane Le, Josiah Parappally, Sam Yu. 
-
-# Inspiration
 It's scary being lost especially without wifi or mobile data, Guidin' George sends you SMS directions to your target location.
 
 A lot of our friends consistently were getting lost in unfamiliar places as they didn't have mobile data. Guidin' George allows users to text a phone number with their location and a search query, and Guidin' George directs them to their destination through text messages without the use of internet/mobile data.
+
+Created by: Sam Yu, Jane Le, Josiah Parappally
+
+# Images
+
+Setting Destination | Getting Directions | Completing Trip
+:-------------------------:|:-------------------------:|:-------------------------:
+![Setting Destination](https://i.imgur.com/3VyNK4m.jpg) | ![Getting Directions](https://i.imgur.com/0nOXh4d.jpg) | ![Completing Trip](https://i.imgur.com/nDXCloS.jpg)
 
 # What it does
 Guidin' George is a friendly text-messaging app that sends you directions based on where you are and your target location. If there are multiple nearby locations, Guidin' George lets you select which location you want to go to.
