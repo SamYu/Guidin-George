@@ -40,13 +40,18 @@ class UserHealthInformation(models.Model):
     )
 
 class DirectionThread(models.Model):
+    USER_LOCATION = 'USER_LOCATION'
+    DESTINATION = 'DESTINATION'
+    DEST_CHOICES = 'DEST_CHOICES'
+    IN_TRANSIT = 'IN_TRANSIT'
+    ARRIVED = 'ARRIVED'
 
     current_step_options = [
-        'USER_LOCATION',
-        'DESTINATION',
-        'DEST_CHOICES',
-        'IN_TRANSIT',
-        'ARRIVED',
+        USER_LOCATION,
+        DESTINATION,
+        DEST_CHOICES,
+        IN_TRANSIT,
+        ARRIVED,
     ]
 
     user = models.ForeignKey(
