@@ -15,7 +15,9 @@ Setting Destination | Getting Directions | Completing Trip
 Guidin' George is a friendly text-messaging app that sends you directions based on where you are and your target location. If there are multiple nearby locations, Guidin' George lets you select which location you want to go to.
 
 # How We built it
-Google Cloud Platform: Google Directions API - Used the Google Directions API to receive step by step directions between Point A and Point B. Google Cloud Platform: Google Places API - Used the Google Places API to return results matching the users search query ordered in proximity to the user.
+**Backend**: Django + Django Rest Framework
+
+**APIs**: Twilio SMS API, Google Directions API, Google Places API, Google Geocoding API
 
 # Challenges We ran into
 It was difficult to maintain a conversational flow for Guidin' George, considering the input could be any text. To combat this, we implemented a model to track which state of the conversation Guidin' George is in to help him decide his tasks.
@@ -24,8 +26,9 @@ It was difficult to maintain a conversational flow for Guidin' George, consideri
 We started a web-app for new users to register their phone numbers to Guidin' George but did not complete the back-end. In addition, we're thinking of adding security features to Guidin' George such as collecting the last location of the user and if they have not arrived within a certain time frame, Guidin' George sends a search party.
 
 # Built With
-python 3,
+python,
 django,
+django rest framework,
 twilio,
 google-cloud,
 google-directions api,
