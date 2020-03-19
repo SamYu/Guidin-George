@@ -1,0 +1,9 @@
+INTRO_MESSAGE = 'Hi {}, I\'m Guidin\' George! What\'s your starting location? (To restart at anytime, type "Reset")'
+ENTER_DESTINATION_MESSAGE = 'You have selected {} as your starting location. Where would you like to go? (Please enter an address). \nTo change your starting location, type "Reset"'
+LAST_SESSION_TIME = 'Your last session was {0} ago, starting new session.'
+LOADING_MESSAGE = 'Guidin\' George is thinking...'
+DEST_CONFIRM_MESSAGE = 'You have selected {}. ' + LOADING_MESSAGE
+INVALID_DEST_MESSAGE = 'I did not find any results for \"{}\". Please enter another destination.'
+INVALID_CHOICE_MESSAGE = 'Invalid choice, please enter a number between 1 and {}'
+ARRIVAL_MESSAGE = 'You have arrived at {}. Thank you for using Guidin\' George!'
+SELECT_DEST_MESSAGE = 'Please select a number from the list (e.g: 1) \n'
